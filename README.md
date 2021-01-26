@@ -15,7 +15,9 @@ At Climate_Analysis notebook:
 ## Step 2 - Climate App - app.py
 
 Now that you have completed your initial analysis, design a Flask API based on the queries that you have just developed.
+[App.py](https://github.com/LF-Ruiz/SqlAlchemy-Challenge/blob/main/app.py)
 
+<a href="https://github.com/LF-Ruiz/SqlAlchemy-Challenge/blob/main/app.py">See app.py here</a>
 
 ### Routes
 

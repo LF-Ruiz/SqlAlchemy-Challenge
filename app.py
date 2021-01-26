@@ -60,12 +60,12 @@ def precipitation():
     
     # Create a dictionary
     precipitation_date_tobs = []
-    for each_row in results:
+    for row in results:
         dt_dict = {}
-        dt_dict["date"] = each_row.date
-        dt_dict["tobs"] = each_row.tobs
+        dt_dict["date"] = row.date
+        dt_dict["tobs"] = row.tobs
         precipitation_date_tobs.append(dt_dict)
-
+    session.close()
     return jsonify(precipitation_date_tobs)
 
 #Return a JSON list of stations from the dataset
@@ -79,7 +79,7 @@ def stations():
 
     # Convert list of tuples into normal list
     station_details = list(np.ravel(results))
-
+    session.close()
     return jsonify(station_details)
 
 # Query the dates and temperature observations of the most active station for the last year of data
@@ -123,17 +123,17 @@ def tobs():
         line["Station"] = result[0]
         line["Temperature"] = int(result[2])
         tobs_list.append(line)
-
+    session.close()
     return jsonify(tobs_list)
-
+#    return render_template("index.html",tobs=tobs_list)
 # Calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date
 @app.route("/api/v1.0/<start>") 
-def start_only(start):
-
+def start_only(start=None):
+    #If statement
     # Create session 
     session = Session(engine)
 
-    # Date Range 
+    # Date Range change organization 
     date_range_max = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
     date_range_max_str = str(date_range_max)
     date_range_max_str = re.sub("'|,", "",date_range_max_str)
@@ -144,7 +144,7 @@ def start_only(start):
     date_range_min_str = re.sub("'|,", "",date_range_min_str)
     print (date_range_min_str)
 
-
+#2010-01-01
     # Check for valid entry of start date
     valid_entry = session.query(exists().where(Measurement.date == start)).scalar()
  
@@ -169,8 +169,8 @@ def start_only(start):
    
 # Calculate the `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive
 @app.route("/api/v1.0/<start>/<end>") 
-def start_end(start, end):
-
+def start_end(start=None, end=None):
+# try and except (look at weather py)
     # Create session
     session = Session(engine)
 
