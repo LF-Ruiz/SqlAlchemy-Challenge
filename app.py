@@ -11,9 +11,9 @@ from sqlalchemy.sql import exists
 from flask import Flask, jsonify
 
 
-#################################################
+
 # Database Setup
-#################################################
+
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
 
 # reflect an existing database into a new model
@@ -25,15 +25,15 @@ Base.prepare(engine, reflect=True)
 Measurement = Base.classes.measurement
 Station = Base.classes.station
 
-#################################################
+
 # Flask Setup
-#################################################
+
 app = Flask(__name__)
 
 
-#################################################
+
 # Flask Routes
-#################################################
+
 
 @app.route("/")
 def welcome():
@@ -48,10 +48,10 @@ def welcome():
 
     )
 
-
-@app.route("/api/v1.0/precipitation") #Convert query results to a dictionary using `date` as the key and `tobs` as the value
+#Convert query results to a dictionary using `date` as the key and `tobs` as the value
+@app.route("/api/v1.0/precipitation") 
 def precipitation():
-    # Create session (link) from Python to the DB
+    # Create session (link)
     session = Session(engine)
 
     # Query Measurement
@@ -68,10 +68,10 @@ def precipitation():
 
     return jsonify(precipitation_date_tobs)
 
-
-@app.route("/api/v1.0/stations") #Return a JSON list of stations from the dataset
+#Return a JSON list of stations from the dataset
+@app.route("/api/v1.0/stations") 
 def stations():
-    # Create session (link) from Python to the DB
+    # Create session 
     session = Session(engine)
 
     # Query Stations
@@ -82,10 +82,10 @@ def stations():
 
     return jsonify(station_details)
 
-
-@app.route("/api/v1.0/tobs") # Query the dates and temperature observations of the most active station for the last year of data
+# Query the dates and temperature observations of the most active station for the last year of data
+@app.route("/api/v1.0/tobs") 
 def tobs():
-    # Create our session (link) from Python to the DB
+    # Create  session
     session = Session(engine)
 
     # Query Measurements for latest date and calculate query_start_date
@@ -126,14 +126,14 @@ def tobs():
 
     return jsonify(tobs_list)
 
-
-@app.route("/api/v1.0/<start>") # Calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date
+# Calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date
+@app.route("/api/v1.0/<start>") 
 def start_only(start):
 
-    # Create session (link) from Python to the DB
+    # Create session 
     session = Session(engine)
 
-    # Date Range (only for help to user in case date gets entered wrong)
+    # Date Range 
     date_range_max = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
     date_range_max_str = str(date_range_max)
     date_range_max_str = re.sub("'|,", "",date_range_max_str)
@@ -167,14 +167,14 @@ def start_only(start):
 
     return jsonify({"error": f"Input Date {start} not valid. Date Range is {date_range_min_str} to {date_range_max_str}"}), 404
    
-
-@app.route("/api/v1.0/<start>/<end>") # Calculate the `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive
+# Calculate the `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive
+@app.route("/api/v1.0/<start>/<end>") 
 def start_end(start, end):
 
-    # Create session (link) from Python to the DB
+    # Create session
     session = Session(engine)
 
-    # Date Range (only for help to user in case date gets entered wrong)
+    # Date Range 
     date_range_max = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
     date_range_max_str = str(date_range_max)
     date_range_max_str = re.sub("'|,", "",date_range_max_str)
