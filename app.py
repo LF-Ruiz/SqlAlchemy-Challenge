@@ -1,7 +1,7 @@
 import numpy as np
 import re
 import datetime as dt
-import pandas as pd
+
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -11,26 +11,29 @@ from sqlalchemy.sql import exists
 from flask import Flask, jsonify
 
 
-#--------------------
+#################################################
 # Database Setup
-#--------------------
+#################################################
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
-#--------------------
+
 # reflect an existing database into a new model
 Base = automap_base()
 # reflect the tables
 Base.prepare(engine, reflect=True)
-#--------------------
+
 # Save reference to the tables
 Measurement = Base.classes.measurement
 Station = Base.classes.station
-#--------------------
 
+#################################################
 # Flask Setup
+#################################################
 app = Flask(__name__)
-#--------------------
+
+
+#################################################
 # Flask Routes
-#--------------------
+#################################################
 
 @app.route("/")
 def welcome():
@@ -46,8 +49,7 @@ def welcome():
     )
 
 
-@app.route("/api/v1.0/precipitation") #Convert query results
-# to a dictionary using `date` as the key and `tobs` as the value
+@app.route("/api/v1.0/precipitation") #Convert query results to a dictionary using `date` as the key and `tobs` as the value
 def precipitation():
     # Create session (link) from Python to the DB
     session = Session(engine)
@@ -99,8 +101,9 @@ def tobs():
      
     # Query station names and their observation counts sorted descending and select most active station
     q_station_list = (session.query(Measurement.station, func.count(Measurement.station))
-                        .group_by(Measurement.station)
-                        .order_by(func.count(Measurement.station).desc()).all())
+                             .group_by(Measurement.station)
+                             .order_by(func.count(Measurement.station).desc())
+                             .all())
     
     station_hno = q_station_list[0][0]
     print(station_hno)
@@ -108,8 +111,9 @@ def tobs():
 
     # Return a list of tobs for the year before the final date
     results = (session.query(Measurement.station, Measurement.date, Measurement.tobs)
-                .filter(Measurement.date >= query_start_date)
-                .filter(Measurement.station == station_hno).all())
+                      .filter(Measurement.date >= query_start_date)
+                      .filter(Measurement.station == station_hno)
+                      .all())
 
     # Create JSON results
     tobs_list = []
@@ -123,8 +127,7 @@ def tobs():
     return jsonify(tobs_list)
 
 
-@app.route("/api/v1.0/<start>") # Calculate `TMIN`, `TAVG`, and `TMAX` 
-#for all dates greater than and equal to the start date
+@app.route("/api/v1.0/<start>") # Calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date
 def start_only(start):
 
     # Create session (link) from Python to the DB
@@ -148,9 +151,9 @@ def start_only(start):
     if valid_entry:
 
     	results = (session.query(func.min(Measurement.tobs)
-    			    ,func.avg(Measurement.tobs)
-    				,func.max(Measurement.tobs))
-    				.filter(Measurement.date >= start).all())
+    				 ,func.avg(Measurement.tobs)
+    				 ,func.max(Measurement.tobs))
+    				 	  .filter(Measurement.date >= start).all())
 
     	tmin =results[0][0]
     	tavg ='{0:.4}'.format(results[0][1])
@@ -184,17 +187,17 @@ def start_end(start, end):
 
     # Check for valid entry of start date
     valid_entry_start = session.query(exists().where(Measurement.date == start)).scalar()
-
-    # Check for valid entry of end date
+ 	
+ 	# Check for valid entry of end date
     valid_entry_end = session.query(exists().where(Measurement.date == end)).scalar()
 
     if valid_entry_start and valid_entry_end:
 
-        results = (session.query(func.min(Measurement.tobs)
-    				    ,func.avg(Measurement.tobs)
-    				    ,func.max(Measurement.tobs))
-    					.filter(Measurement.date >= start)
-    				  	.filter(Measurement.date <= end).all())
+    	results = (session.query(func.min(Measurement.tobs)
+    				 ,func.avg(Measurement.tobs)
+    				 ,func.max(Measurement.tobs))
+    					  .filter(Measurement.date >= start)
+    				  	  .filter(Measurement.date <= end).all())
 
     	tmin =results[0][0]
     	tavg ='{0:.4}'.format(results[0][1])
