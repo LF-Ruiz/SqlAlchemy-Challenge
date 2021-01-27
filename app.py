@@ -56,7 +56,7 @@ def precipitation():
 
     # Query Measurement
     results = (session.query(Measurement.date, Measurement.tobs)
-                      .order_by(Measurement.date))
+                    .order_by(Measurement.date))
     
     # Create a dictionary
     precipitation_date_tobs = []
@@ -90,20 +90,20 @@ def tobs():
 
     # Query Measurements for latest date and calculate query_start_date
     latest_date = (session.query(Measurement.date)
-                          .order_by(Measurement.date
-                          .desc())
-                          .first())
+                        .order_by(Measurement.date
+                        .desc())
+                        .first())
     
     latest_date_str = str(latest_date)
     latest_date_str = re.sub("'|,", "",latest_date_str)
     latest_date_obj = dt.datetime.strptime(latest_date_str, '(%Y-%m-%d)')
     query_start_date = dt.date(latest_date_obj.year, latest_date_obj.month, latest_date_obj.day) - dt.timedelta(days=366)
-     
+
     # Query station names and their observation counts sorted descending and select most active station
     q_station_list = (session.query(Measurement.station, func.count(Measurement.station))
-                             .group_by(Measurement.station)
-                             .order_by(func.count(Measurement.station).desc())
-                             .all())
+                            .group_by(Measurement.station)
+                            .order_by(func.count(Measurement.station).desc())
+                            .all())
     
     station_hno = q_station_list[0][0]
     print(station_hno)
@@ -111,9 +111,9 @@ def tobs():
 
     # Return a list of tobs for the year before the final date
     results = (session.query(Measurement.station, Measurement.date, Measurement.tobs)
-                      .filter(Measurement.date >= query_start_date)
-                      .filter(Measurement.station == station_hno)
-                      .all())
+                    .filter(Measurement.date >= query_start_date)
+                    .filter(Measurement.station == station_hno)
+                    .all())
 
     # Create JSON results
     tobs_list = []
@@ -126,6 +126,7 @@ def tobs():
     session.close()
     return jsonify(tobs_list)
 #    return render_template("index.html",tobs=tobs_list)
+
 # Calculate `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date
 @app.route("/api/v1.0/<start>") 
 def start_only(start=None):
@@ -133,40 +134,43 @@ def start_only(start=None):
     # Create session 
     session = Session(engine)
 
-    # Date Range change organization 
-    date_range_max = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
-    date_range_max_str = str(date_range_max)
-    date_range_max_str = re.sub("'|,", "",date_range_max_str)
-    print (date_range_max_str)
-
-    date_range_min = session.query(Measurement.date).first()
-    date_range_min_str = str(date_range_min)
-    date_range_min_str = re.sub("'|,", "",date_range_min_str)
-    print (date_range_min_str)
-
+    
 #2010-01-01
     # Check for valid entry of start date
     valid_entry = session.query(exists().where(Measurement.date == start)).scalar()
  
     if valid_entry:
 
-    	results = (session.query(func.min(Measurement.tobs)
-    				 ,func.avg(Measurement.tobs)
-    				 ,func.max(Measurement.tobs))
-    				 	  .filter(Measurement.date >= start).all())
+        results = (session.query(func.min(Measurement.tobs)
+                    ,func.avg(Measurement.tobs)
+                    ,func.max(Measurement.tobs))
+                    .filter(Measurement.date >= start).all())
 
-    	tmin =results[0][0]
-    	tavg ='{0:.4}'.format(results[0][1])
-    	tmax =results[0][2]
+        tmin =results[0][0]
+        tavg ='{0:.4}'.format(results[0][1])
+        tmax =results[0][2]
     
-    	result_printout =( ['Entered Start Date: ' + start,
-    						'The lowest Temperature was: '  + str(tmin) + ' F',
-    						'The average Temperature was: ' + str(tavg) + ' F',
-    						'The highest Temperature was: ' + str(tmax) + ' F'])
-    	return jsonify(result_printout)
+        result_printout =( ['Entered Start Date: ' + start,
+                            'The lowest Temperature was: '  + str(tmin) + ' F',
+                            'The average Temperature was: ' + str(tavg) + ' F',
+                            'The highest Temperature was: ' + str(tmax) + ' F'])
+        return jsonify(result_printout)
 
+    
+
+    else:
+        # Date Range change organization 
+        date_range_max = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
+        date_range_max_str = str(date_range_max)
+        date_range_max_str = re.sub("'|,", "",date_range_max_str)
+        print (date_range_max_str)
+
+        date_range_min = session.query(Measurement.date).first()
+        date_range_min_str = str(date_range_min)
+        date_range_min_str = re.sub("'|,", "",date_range_min_str)
+        print (date_range_min_str)
     return jsonify({"error": f"Input Date {start} not valid. Date Range is {date_range_min_str} to {date_range_max_str}"}), 404
-   
+
 # Calculate the `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive
 @app.route("/api/v1.0/<start>/<end>") 
 def start_end(start=None, end=None):
@@ -187,37 +191,37 @@ def start_end(start=None, end=None):
 
     # Check for valid entry of start date
     valid_entry_start = session.query(exists().where(Measurement.date == start)).scalar()
- 	
- 	# Check for valid entry of end date
+
+    # Check for valid entry of end date
     valid_entry_end = session.query(exists().where(Measurement.date == end)).scalar()
 
     if valid_entry_start and valid_entry_end:
 
-    	results = (session.query(func.min(Measurement.tobs)
-    				 ,func.avg(Measurement.tobs)
-    				 ,func.max(Measurement.tobs))
-    					  .filter(Measurement.date >= start)
-    				  	  .filter(Measurement.date <= end).all())
+        results = (session.query(func.min(Measurement.tobs)
+                    ,func.avg(Measurement.tobs)
+                    ,func.max(Measurement.tobs))
+                    .filter(Measurement.date >= start)
+                    .filter(Measurement.date <= end).all())
 
-    	tmin =results[0][0]
-    	tavg ='{0:.4}'.format(results[0][1])
-    	tmax =results[0][2]
+        tmin =results[0][0]
+        tavg ='{0:.4}'.format(results[0][1])
+        tmax =results[0][2]
     
-    	result_printout =( ['Entered Start Date: ' + start,
-    						'Entered End Date: ' + end,
-    						'The lowest Temperature was: '  + str(tmin) + ' F',
-    						'The average Temperature was: ' + str(tavg) + ' F',
-    						'The highest Temperature was: ' + str(tmax) + ' F'])
-    	return jsonify(result_printout)
+        result_printout =( ['Entered Start Date: ' + start,
+                            'Entered End Date: ' + end,
+                            'The lowest Temperature was: '  + str(tmin) + ' F',
+                            'The average Temperature was: ' + str(tavg) + ' F',
+                            'The highest Temperature was: ' + str(tmax) + ' F'])
+        return jsonify(result_printout)
 
     if not valid_entry_start and not valid_entry_end:
-    	return jsonify({"error": f"Input Start {start} and End Date {end} not valid. Date Range is {date_range_min_str} to {date_range_max_str}"}), 404
+        return jsonify({"error": f"Input Start {start} and End Date {end} not valid. Date Range is {date_range_min_str} to {date_range_max_str}"}), 404
 
     if not valid_entry_start:
-    	return jsonify({"error": f"Input Start Date {start} not valid. Date Range is {date_range_min_str} to {date_range_max_str}"}), 404
+        return jsonify({"error": f"Input Start Date {start} not valid. Date Range is {date_range_min_str} to {date_range_max_str}"}), 404
 
     if not valid_entry_end:
-    	return jsonify({"error": f"Input End Date {end} not valid. Date Range is {date_range_min_str} to {date_range_max_str}"}), 404
+        return jsonify({"error": f"Input End Date {end} not valid. Date Range is {date_range_min_str} to {date_range_max_str}"}), 404
 
 
 if __name__ == '__main__':
