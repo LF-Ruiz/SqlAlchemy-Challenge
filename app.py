@@ -131,14 +131,15 @@ def tobs():
 @app.route("/api/v1.0/<start>") 
 def start_only(start=None):
     #If statement
+
     # Create session 
     session = Session(engine)
 
     
-#2010-01-01
+
     # Check for valid entry of start date
     valid_entry = session.query(exists().where(Measurement.date == start)).scalar()
- 
+
     if valid_entry:
 
         results = (session.query(func.min(Measurement.tobs)
@@ -169,6 +170,8 @@ def start_only(start=None):
         date_range_min_str = str(date_range_min)
         date_range_min_str = re.sub("'|,", "",date_range_min_str)
         print (date_range_min_str)
+
+        session.close()
     return jsonify({"error": f"Input Date {start} not valid. Date Range is {date_range_min_str} to {date_range_max_str}"}), 404
 
 # Calculate the `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive
